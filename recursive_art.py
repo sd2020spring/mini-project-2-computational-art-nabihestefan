@@ -1,11 +1,34 @@
 """
-YOUR HEADER COMMENT HERE
+'Art'
 
-@author: YOUR NAME HERE
+@author: Nabih Estefan
 """
 
 import random
 from PIL import Image
+import doctest
+import math
+
+def test_image(filename, x_size=350, y_size=350):
+    """Generate a test image with random pixels and save as an image file.
+
+    Args:
+        filename: string filename for image (should be .png)
+        x_size, y_size: optional args to set image dimensions (default: 350)
+    """
+    # Create image and loop over all pixels
+    im = Image.new("RGB", (x_size, y_size))
+    pixels = im.load()
+    for i in range(x_size):
+        for j in range(y_size):
+            x = remap_interval(i, 0, x_size, -1, 1)
+            y = remap_interval(j, 0, y_size, -1, 1)
+            pixels[i, j] = (random.randint(0, 255),  # Red channel
+                            random.randint(0, 255),  # Green channel
+                            random.randint(0, 255))  # Blue channel
+
+    im.save(filename)
+
 
 
 def build_random_function(min_depth, max_depth):
@@ -21,11 +44,44 @@ def build_random_function(min_depth, max_depth):
 
     Returns:
         The randomly generated function represented as a nested list.
-        (See the assignment writ-eup for details on the representation of
+        (See the assignment write-up for details on the representation of
         these functions)
     """
-    # TODO: implement this
-    pass
+    depth = random.randint(min_depth, max_depth)
+    choice = 0
+    if depth == 1:
+        choice = random.randint(1,2)
+        """
+            1 = x
+            2 = y
+        """
+        if choice == 1:
+            return ["x"]
+        else:
+            return ["y"]
+    else:
+        choice = random.randint(1, 6)
+        """
+            1 = product
+            2 = average
+            3 = cosine
+            4 = sine
+            5 = square
+            6 = cube
+        """
+        d = depth - 1
+        if choice == 1:
+            return ["prod", [build_random_function(d, d)],[build_random_function(d, d)]]
+        elif choice == 2:
+            return ["avg", [build_random_function(d, d)], [build_random_function(d, d)]]
+        elif choice == 3:
+            return ["cos_pi", [build_random_function(d, d)]]
+        elif choice == 4:
+            return ["sin_pi", [build_random_function(d, d)]]
+        elif choice == 5:
+            return ["sqr", [build_random_function(d, d)]]
+        elif choice == 6:
+            return ["cub", [build_random_function(d, d)]]
 
 
 def evaluate_random_function(f, x, y):
@@ -47,8 +103,41 @@ def evaluate_random_function(f, x, y):
         >>> evaluate_random_function(["y"],0.1,0.02)
         0.02
     """
-    # TODO: implement this
-    pass
+
+    """
+        prod = product
+        avg = average
+        cos_pi = cosine
+        sin_pi = sine
+        sqr = square
+        cub = cube
+    """
+    if f[0] == "x":
+        return x
+    elif f[0] == "y":
+        return y
+    elif f[0] == "prod":
+        z = evaluate_random_function(f[1], x, y)
+        a = evaluate_random_function(f[2], x, y)
+        return z * a
+    elif f[0] == "avg":
+        z = evaluate_random_function(f[1], x, y)
+        a = evaluate_random_function(f[2], x, y)
+        return 0.5 * (z + a)
+    elif f[0] == "cos_pi":
+        z = evaluate_random_function(f[1], x, y)
+        return math.cos(z)
+    elif f[0] == "sin_pi":
+        z = evaluate_random_function(f[1], x, y)
+        return math.sin(z)
+    elif f[0] == "sqr":
+        z = evaluate_random_function(f[1], x, y)
+        return z ** 2
+    elif f[0] == "cub":
+        z = evaluate_random_function(f[1], x, y)
+        return z ** 3
+#Passed
+#doctest.run_docstring_examples(evaluate_random_function, globals(), verbose=True)
 
 
 def remap_interval(val,
@@ -84,8 +173,26 @@ def remap_interval(val,
         >>> remap_interval(5, 4, 6, 1, 2)
         1.5
     """
-    # TODO: implement this
-    pass
+
+    inputValueToStart = val - input_interval_start
+    inputValueToEnd = input_interval_end - val
+    inputsStartToEnd = input_interval_end - input_interval_start
+    outputStartToEnd = output_interval_end - output_interval_start
+
+    scale = outputStartToEnd / inputsStartToEnd
+
+    startDif = inputValueToStart * scale
+    endDif = inputValueToEnd * scale
+
+    nValue1 = output_interval_start + startDif
+    nValue2 = output_interval_end - endDif
+
+    new = (nValue1 + nValue2) / 2
+
+    return new
+
+#Passed
+#doctest.run_docstring_examples(remap_interval, globals(), verbose=True)
 
 
 def color_map(val):
@@ -112,27 +219,6 @@ def color_map(val):
     return int(color_code)
 
 
-def test_image(filename, x_size=350, y_size=350):
-    """Generate a test image with random pixels and save as an image file.
-
-    Args:
-        filename: string filename for image (should be .png)
-        x_size, y_size: optional args to set image dimensions (default: 350)
-    """
-    # Create image and loop over all pixels
-    im = Image.new("RGB", (x_size, y_size))
-    pixels = im.load()
-    for i in range(x_size):
-        for j in range(y_size):
-            x = remap_interval(i, 0, x_size, -1, 1)
-            y = remap_interval(j, 0, y_size, -1, 1)
-            pixels[i, j] = (random.randint(0, 255),  # Red channel
-                            random.randint(0, 255),  # Green channel
-                            random.randint(0, 255))  # Blue channel
-
-    im.save(filename)
-
-
 def generate_art(filename, x_size=350, y_size=350):
     """Generate computational art and save as an image file.
 
@@ -141,9 +227,21 @@ def generate_art(filename, x_size=350, y_size=350):
         x_size, y_size: optional args to set image dimensions (default: 350)
     """
     # Functions for red, green, and blue channels - where the magic happens!
-    red_function = ["x"]
-    green_function = ["y"]
-    blue_function = ["x"]
+    red_function = build_random_function(7,9)
+
+    print("red")
+    print(red_function)
+
+    green_function = build_random_function(7,9)
+
+    print("green")
+    print(green_function)
+
+    blue_function = build_random_function(7,9)
+
+    print("blue")
+    print(blue_function)
+
 
     # Create image and loop over all pixels
     im = Image.new("RGB", (x_size, y_size))
@@ -168,8 +266,4 @@ if __name__ == '__main__':
     # Create some computational art!
     # TODO: Un-comment the generate_art function call after you
     #       implement remap_interval and evaluate_random_function
-    # generate_art("myart.png")
-
-    # Test that PIL is installed correctly
-    # TODO: Comment or remove this function call after testing PIL install
-    test_image("noise.png")
+    generate_art("myart.png")
