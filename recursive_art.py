@@ -50,12 +50,7 @@ def build_random_function(min_depth, max_depth):
     depth = random.randint(min_depth, max_depth)
     choice = 0
     if depth == 1:
-        choice = random.randint(1,2)
-        """
-            1 = x
-            2 = y
-        """
-        if choice == 1:
+        if random.randint(1,2) == 1:
             return ["x"]
         else:
             return ["y"]
@@ -71,17 +66,17 @@ def build_random_function(min_depth, max_depth):
         """
         d = depth - 1
         if choice == 1:
-            return ["prod", [build_random_function(d, d)],[build_random_function(d, d)]]
+            return ["prod", build_random_function(d, d),build_random_function(d, d)]
         elif choice == 2:
-            return ["avg", [build_random_function(d, d)], [build_random_function(d, d)]]
+            return ["avg", build_random_function(d, d), build_random_function(d, d)]
         elif choice == 3:
-            return ["cos_pi", [build_random_function(d, d)]]
+            return ["cos_pi", build_random_function(d, d)]
         elif choice == 4:
-            return ["sin_pi", [build_random_function(d, d)]]
+            return ["sin_pi", build_random_function(d, d)]
         elif choice == 5:
-            return ["sqr", [build_random_function(d, d)]]
+            return ["sqr", build_random_function(d, d)]
         elif choice == 6:
-            return ["cub", [build_random_function(d, d)]]
+            return ["cub", build_random_function(d, d)]
 
 
 def evaluate_random_function(f, x, y):
@@ -102,6 +97,21 @@ def evaluate_random_function(f, x, y):
         -0.5
         >>> evaluate_random_function(["y"],0.1,0.02)
         0.02
+        >>> evaluate_random_function(["prod", ["x"], ["y"]], 0.5, 0.75)
+        0.375
+        >>> evaluate_random_function(["avg", ["x"], ["y"]], 0.25, 0.75)
+        0.5
+        >>> evaluate_random_function(["cos_pi", ["x"]], 0, 0.75)
+        1.0
+        >>> evaluate_random_function(["sin_pi", ["y"]], 0.5, 0)
+        0.0
+        >>> evaluate_random_function(["sqr", ["y"]], 0.5, 0.75)
+        0.5625
+        >>> evaluate_random_function(["cub", ["x"]], 0.5, 0.75)
+        0.125
+
+
+
     """
 
     """
@@ -112,37 +122,32 @@ def evaluate_random_function(f, x, y):
         sqr = square
         cub = cube
     """
+    #print(f[0])
     if f[0] == "x":
         return x
     elif f[0] == "y":
         return y
     elif f[0] == "prod":
-        z = evaluate_random_function(f[1], x, y)
-        a = evaluate_random_function(f[2], x, y)
-        return z * a
+        return evaluate_random_function(f[1], x, y) * evaluate_random_function(f[2], x, y)
     elif f[0] == "avg":
-        z = evaluate_random_function(f[1], x, y)
-        a = evaluate_random_function(f[2], x, y)
-        return 0.5 * (z + a)
+        return 0.5 * (evaluate_random_function(f[1], x, y) + evaluate_random_function(f[2], x, y))
     elif f[0] == "cos_pi":
-        z = evaluate_random_function(f[1], x, y)
-        return math.cos(z)
+        return math.cos(math.pi * evaluate_random_function(f[1], x, y))
     elif f[0] == "sin_pi":
-        z = evaluate_random_function(f[1], x, y)
-        return math.sin(z)
+        return math.sin(math.pi * evaluate_random_function(f[1], x, y))
     elif f[0] == "sqr":
-        z = evaluate_random_function(f[1], x, y)
-        return z ** 2
+        return evaluate_random_function(f[1], x, y) ** 2
     elif f[0] == "cub":
-        z = evaluate_random_function(f[1], x, y)
-        return z ** 3
+        return evaluate_random_function(f[1], x, y) ** 3
+
+    pass
 #Passed
 #doctest.run_docstring_examples(evaluate_random_function, globals(), verbose=True)
 
 
 def remap_interval(val,
                    input_interval_start,
-                   input_interval_end,
+                    input_interval_end,
                    output_interval_start,
                    output_interval_end):
     """Remap a value from one interval to another.
@@ -174,22 +179,8 @@ def remap_interval(val,
         1.5
     """
 
-    inputValueToStart = val - input_interval_start
-    inputValueToEnd = input_interval_end - val
-    inputsStartToEnd = input_interval_end - input_interval_start
-    outputStartToEnd = output_interval_end - output_interval_start
-
-    scale = outputStartToEnd / inputsStartToEnd
-
-    startDif = inputValueToStart * scale
-    endDif = inputValueToEnd * scale
-
-    nValue1 = output_interval_start + startDif
-    nValue2 = output_interval_end - endDif
-
-    new = (nValue1 + nValue2) / 2
-
-    return new
+    norm = (val - input_interval_start)/(input_interval_end - input_interval_start)
+    return (norm * (output_interval_end - output_interval_start)) + output_interval_start
 
 #Passed
 #doctest.run_docstring_examples(remap_interval, globals(), verbose=True)
@@ -214,7 +205,6 @@ def color_map(val):
         >>> color_map(0.5)
         191
     """
-    # NOTE: This relies on remap_interval, which you must provide
     color_code = remap_interval(val, -1, 1, 0, 255)
     return int(color_code)
 
@@ -227,25 +217,29 @@ def generate_art(filename, x_size=350, y_size=350):
         x_size, y_size: optional args to set image dimensions (default: 350)
     """
     # Functions for red, green, and blue channels - where the magic happens!
-    red_function = build_random_function(7,9)
-
+    red_function = build_random_function(15,20)
     print("red")
     print(red_function)
 
-    green_function = build_random_function(7,9)
-
+    green_function = build_random_function(15,20)
     print("green")
     print(green_function)
 
-    blue_function = build_random_function(7,9)
-
+    blue_function = build_random_function(15,20)
     print("blue")
     print(blue_function)
+
 
 
     # Create image and loop over all pixels
     im = Image.new("RGB", (x_size, y_size))
     pixels = im.load()
+    x = 0.5
+    y = 0.75
+    color_map(evaluate_random_function(red_function, x, y)),
+    color_map(evaluate_random_function(green_function, x, y)),
+    color_map(evaluate_random_function(blue_function, x, y))
+
     for i in range(x_size):
         for j in range(y_size):
             x = remap_interval(i, 0, x_size, -1, 1)
@@ -255,7 +249,7 @@ def generate_art(filename, x_size=350, y_size=350):
                 color_map(evaluate_random_function(green_function, x, y)),
                 color_map(evaluate_random_function(blue_function, x, y))
             )
-
+    print(filename)
     im.save(filename)
 
 
@@ -263,7 +257,4 @@ if __name__ == '__main__':
     import doctest
     doctest.testmod()
 
-    # Create some computational art!
-    # TODO: Un-comment the generate_art function call after you
-    #       implement remap_interval and evaluate_random_function
-    generate_art("myart.png")
+    generate_art("please work.png")
